@@ -1,3 +1,6 @@
+# claudia.json can conflict between dev environments - adding to .gitignore
+claudia.json
+
 # Logs
 logs
 *.log
