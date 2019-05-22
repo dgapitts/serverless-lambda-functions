@@ -1,17 +1,17 @@
-const { getPizzas } = require('./pizzas');
+const AWS = require('aws-sdk');
+const docClient = new AWS.DynamoDB.DocumentClient();
 
-let orders = [];
-let orderIdSeed = 0;
+const { getPizzas } = require('./pizzas');
 
 /**
  * Return an order found from a given orderId, or return undefined if not found.
- * @param {Number} orderId 
+ * @param {string} orderId 
  */
-const findOrderById = (orderId) => orders.find(o => o.id === Number(orderId));
+const findOrderById = (orderId) => orders.find(o => o.orderId === Number(orderId));
 
 /**
  * Throw an error because the given orderId cannot be found.
- * @param {Number} orderId 
+ * @param {string} orderId 
  */
 const orderNotFound = (orderId) => {
   throw new Error(`Order ${orderId} cannot be found.`);
@@ -28,18 +28,29 @@ const postOrders = (payload) => {
 
   const pizza = getPizzas(payload.pizzaId);
 
-  orderIdSeed = orderIdSeed + 1;
-
   const order = {
     ...payload,
     pizzaId: pizza.id,
     pizzaName: pizza.name,
-    id: orderIdSeed,
+    status: 'pending',
+    orderId: 'some-id',
   };
 
-  orders.push(order);
-
-  return order;
+  return docClient.put({
+    TableName: 'pizza-orders',
+    Item: {
+      orderId: order.orderId,
+      pizza: order.pizzaName,
+      deliveryAddress: order.deliveryAddress,
+      status: order.status,
+    },
+  }).promise()
+  .then((response) => {
+    return response;
+  })
+  .catch((error) => {
+    throw error;
+  });
 };
 
 /**
@@ -76,8 +87,9 @@ const putOrders = (orderId, payload) => {
   }
 
   const updatedOrder = {
-    ...order,
-    ...payload,
+    ...order,     // Existing data.
+    ...payload,   // Overwrite any existing data with the payload,
+    id: order.id, // but preserve the order id.
   };
 
   orders = orders.map((o) => {

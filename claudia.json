@@ -1,11 +1,11 @@
 {
   "lambda": {
-    "role": "serverless-lambda-functions-dave-executor",
-    "name": "serverless-lambda-functions-dave",
+    "role": "serverless-lambda-functions-executor",
+    "name": "serverless-lambda-functions",
     "region": "eu-west-1"
   },
   "api": {
-    "id": "7vhavddo8g",
+    "id": "hw9gsitywg",
     "module": "api"
   }
 }

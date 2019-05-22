@@ -39,6 +39,55 @@ The successsful response should mention a "url" for your "api". Append `/pizzas`
 npm run update
 ```
 
+## Chapter 3 - setup dynamo db table
+
+
+```
+~/projects/serverless-lambda-functions $ cat setup_pizza-order_dynamoDB.sh
+aws dynamodb create-table --table-name pizza-orders \
+   --attribute-definitions AttributeName=orderId,AttributeType=S \
+   --key-schema AttributeName=orderId,KeyType=HASH \
+   --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1 \
+   --region eu-west-1 \
+   --query TableDescription.TableArn --output text
+
+aws dynamodb describe-table --table-name pizza-orders  --region eu-west-1
+```
+
+and running this, the output will be similar to
+```
+~/projects/serverless-lambda-functions $ bash setup_pizza-order_dynamoDB.sh
+arn:aws:dynamodb:eu-west-1:981192392543:table/pizza-orders
+{
+    "Table": {
+        "AttributeDefinitions": [
+            {
+                "AttributeName": "orderId",
+                "AttributeType": "S"
+            }
+        ],
+        "TableName": "pizza-orders",
+        "KeySchema": [
+            {
+                "AttributeName": "orderId",
+                "KeyType": "HASH"
+            }
+        ],
+        "TableStatus": "CREATING",
+        "CreationDateTime": 1558430353.101,
+        "ProvisionedThroughput": {
+            "NumberOfDecreasesToday": 0,
+            "ReadCapacityUnits": 1,
+            "WriteCapacityUnits": 1
+        },
+        "TableSizeBytes": 0,
+        "ItemCount": 0,
+        "TableArn": "arn:aws:dynamodb:eu-west-1:981192392543:table/pizza-orders",
+        "TableId": "a5c72b11-d6be-4988-b0b6-a04afc1e0cbc"
+    }
+}
+```
+
 ## todo
 - PUT to orders entity is broken and makes every order become null.
 - Switch to Typescript.
