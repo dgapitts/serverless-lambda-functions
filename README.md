@@ -1,6 +1,8 @@
 # serverless-lambda-functions
 Learn how to use AWS Lambda functions.
 
+This repository is based on the exercises of the book [Serverless Applications with Node.js](https://www.manning.com/books/serverless-applications-with-node-js) by [Slobodan Stojanović](https://twitter.com/slobodan_?lang=en) and [Aleksandar Simović](https://twitter.com/simalexan?lang=en)
+
 ## Install
 ```
 npm install
@@ -25,12 +27,14 @@ aws_secret_access_key=YOUR_ACCESS_SECRET
 ```
 
 ## Deploy to AWS the first time
+The file `claudia.json` needs to be deleted because it is specific to a given AWS production environment.
+
 ```
 rm claudia.json
 npm run create
 ```
 
-Note this will deploy to the EU Ireland datacentre. Edit `package.json` script if you wish to deploy to a different datacentre. A `claudia.json` file will be generated locally: do not commit it to your repository.
+Note this will deploy to the EU Ireland datacentre. Edit `package.json` script if you wish to deploy to a different datacentre. A `claudia.json` file will be generated locally.
 
 The successsful response should mention a "url" for your "api". Append `/pizzas` to it in a browser to get your JSON response.
 

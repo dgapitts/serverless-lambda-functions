@@ -1,21 +1,8 @@
 const AWS = require('aws-sdk');
 const docClient = new AWS.DynamoDB.DocumentClient();
+const uuid = require('uuid');
 
 const { getPizzas } = require('./pizzas');
-
-/**
- * Return an order found from a given orderId, or return undefined if not found.
- * @param {string} orderId 
- */
-const findOrderById = (orderId) => orders.find(o => o.orderId === Number(orderId));
-
-/**
- * Throw an error because the given orderId cannot be found.
- * @param {string} orderId 
- */
-const orderNotFound = (orderId) => {
-  throw new Error(`Order ${orderId} cannot be found.`);
-};
 
 /**
  * Create a new order and add it to the list of all orders.
@@ -33,7 +20,8 @@ const postOrders = (payload) => {
     pizzaId: pizza.id,
     pizzaName: pizza.name,
     status: 'pending',
-    orderId: 'some-id',
+    orderId: uuid(),
+    timestamp: Date.now(),
   };
 
   return docClient.put({
@@ -43,10 +31,11 @@ const postOrders = (payload) => {
       pizza: order.pizzaName,
       deliveryAddress: order.deliveryAddress,
       status: order.status,
+      timestamp: order.timestamp,
     },
   }).promise()
   .then((response) => {
-    return response;
+    return response ? order : new Error('Order could not be created.');
   })
   .catch((error) => {
     throw error;
@@ -55,25 +44,48 @@ const postOrders = (payload) => {
 
 /**
  * Get an existing order when orderId is specified, or list all orders when no orderId is given.
- * @param {Number?} orderId 
+ * @param {string?} orderId 
  */
 const getOrders = (orderId) => {
-  if (!orderId) {
-    return orders;
+  if (orderId) {
+    // Return a single order.
+    return docClient.get({
+      TableName: 'pizza-orders',
+      Key: {
+        orderId,
+      },
+    }).promise()
+      .then((result) => {
+        if (!result.Item || !result.Item.orderId) {
+          throw new Error('Order cannot be found.');
+        }
+
+        return result.Item;
+      })
+      .catch((error) => {
+        throw error;
+      });
   }
 
-  const order = findOrderById(orderId);
+  // Return all orders.
+  return docClient.scan({
+    TableName: 'pizza-orders',
+  }).promise()
+  .then((result) => {
+    if (result.Count === 0) {
+      throw new Error('There are no orders in the database.');
+    }
 
-  if (order) {
-    return order;
-  }
-
-  return orderNotFound(orderId);
+    return result.Items;
+  })
+  .catch((error) => {
+    throw error;
+  });
 };
 
 /**
  * Update an existing order.
- * @param {Number} orderId 
+ * @param {string} orderId 
  */
 const putOrders = (orderId, payload) => {
   if (!orderId || !payload) {
@@ -101,7 +113,7 @@ const putOrders = (orderId, payload) => {
 
 /**
  * Delete an existing order.
- * @param {Number} orderId 
+ * @param {string} orderId 
  */
 const deleteOrders = (orderId) => {
   if (!orderId) {
