@@ -26,13 +26,7 @@ const postOrders = (payload) => {
 
   return docClient.put({
     TableName: 'pizza-orders',
-    Item: {
-      orderId: order.orderId,
-      pizza: order.pizzaName,
-      deliveryAddress: order.deliveryAddress,
-      status: order.status,
-      timestamp: order.timestamp,
-    },
+    Item: order,
   }).promise()
   .then((response) => {
     return response ? order : new Error('Order could not be created.');
@@ -85,30 +79,45 @@ const getOrders = (orderId) => {
 
 /**
  * Update an existing order.
- * @param {string} orderId 
+ * @param {string} orderId
+ * @param {Order object} payload
  */
 const putOrders = (orderId, payload) => {
   if (!orderId || !payload) {
     throw new Error('Supply the orderId (url) and the payload of the order you wish to update.');
   }
 
-  const order = findOrderById(orderId);
+  return docClient.get({
+    TableName: 'pizza-orders',
+    Key: {
+      orderId,
+    },
+  }).promise()
+    .then((result) => {
+      if (!result.Item || !result.Item.orderId) {
+        throw new Error('Order cannot be found.');
+      }
 
-  if (!order) {
-    return orderNotFound(orderId);
-  }
+      const updatedOrder = {
+        ...result.Item,               // Existing data.
+        ...payload,                   // Overwrite any existing data with the payload,
+        orderId: result.Item.orderId, // but preserve the order id.
+      };
 
-  const updatedOrder = {
-    ...order,     // Existing data.
-    ...payload,   // Overwrite any existing data with the payload,
-    id: order.id, // but preserve the order id.
-  };
-
-  orders = orders.map((o) => {
-    return (o.id === Number(orderId)) ? updatedOrder : o;
-  });
-
-  return updatedOrder;
+      return docClient.put({
+        TableName: 'pizza-orders',
+        Item: updatedOrder,
+      }).promise()
+      .then((response) => {
+        return response ? updatedOrder : new Error('Order could not be updated.');
+      })
+      .catch((error) => {
+        throw error;
+      });
+    })
+    .catch((error) => {
+      throw error;
+    });
 };
 
 /**
@@ -120,19 +129,26 @@ const deleteOrders = (orderId) => {
     throw new Error('Supply the orderId of the order you wish to delete.');
   }
 
-  const order = findOrderById(orderId);
-  const index = orders.indexOf(order);
+  return docClient.delete({
+    TableName: 'pizza-orders',
+    Key: {
+      orderId,
+    },
+    ConditionExpression: 'orderId = :orderId',
+    ExpressionAttributeValues: {
+      ':orderId': orderId,
+    },
+  }).promise()
+    .then((result) => {
+      if (!result) {
+        throw new Error('Deletion of order failed.');
+      }
 
-  if (!order) {
-    return orderNotFound(orderId);
-  }
-
-  orders.splice(index, 1);
-
-  return {
-    deleted: order,
-    orders,
-  };
+      return `Order ${orderId} has been deleted.`;
+    })
+    .catch((error) => {
+      throw error;
+    });
 };
 
 module.exports = {
