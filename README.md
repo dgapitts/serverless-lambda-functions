@@ -93,10 +93,12 @@ arn:aws:dynamodb:eu-west-1:981192392543:table/pizza-orders
 ```
 
 ## todo
-- PUT to orders entity is broken and makes every order become null.
+- Setup GraphQL in front of each end point to let the client decide how to query the data.
+- Abstract CRUD code and inherit for each controller, so that pizzas and orders can run the same functionality.
 - Switch to Typescript.
 - Add linting.
 - Add unit tests with Jest and test coverage report (istanbul).
 - JSDoc documentation.
 - Setup working locally.
 - In each API response, link to other useful endpoints.
+- Introduce Continuous Integration and Continuous Delivery (canary deployment, AB testing are all possible with serverless, see presentation notes about Amazon on Serverless in Amsterdam, 29th May 2019).
