@@ -1,6 +1,8 @@
 # serverless-lambda-functions
 Learn how to use AWS Lambda functions.
 
+This repository is based on the exercises of the book [Serverless Applications with Node.js](https://www.manning.com/books/serverless-applications-with-node-js) by [Slobodan Stojanović](https://twitter.com/slobodan_?lang=en) and [Aleksandar Simović](https://twitter.com/simalexan?lang=en)
+
 ## Install
 ```
 npm install
@@ -25,12 +27,14 @@ aws_secret_access_key=YOUR_ACCESS_SECRET
 ```
 
 ## Deploy to AWS the first time
+The file `claudia.json` needs to be deleted because it is specific to a given AWS production environment.
+
 ```
 rm claudia.json
 npm run create
 ```
 
-Note this will deploy to the EU Ireland datacentre. Edit `package.json` script if you wish to deploy to a different datacentre. A `claudia.json` file will be generated locally: do not commit it to your repository.
+Note this will deploy to the EU Ireland datacentre. Edit `package.json` script if you wish to deploy to a different datacentre. A `claudia.json` file will be generated locally.
 
 The successsful response should mention a "url" for your "api". Append `/pizzas` to it in a browser to get your JSON response.
 
@@ -89,10 +93,12 @@ arn:aws:dynamodb:eu-west-1:981192392543:table/pizza-orders
 ```
 
 ## todo
-- PUT to orders entity is broken and makes every order become null.
+- Setup GraphQL in front of each end point to let the client decide how to query the data.
+- Abstract CRUD code and inherit for each controller, so that pizzas and orders can run the same functionality.
 - Switch to Typescript.
 - Add linting.
 - Add unit tests with Jest and test coverage report (istanbul).
 - JSDoc documentation.
 - Setup working locally.
 - In each API response, link to other useful endpoints.
+- Introduce Continuous Integration and Continuous Delivery (canary deployment, AB testing are all possible with serverless, see presentation notes about Amazon on Serverless in Amsterdam, 29th May 2019).
